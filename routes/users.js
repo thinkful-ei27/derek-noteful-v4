@@ -21,9 +21,15 @@ router.post('/', (req, res, next) => {
     return next(err);
   }
 
-  const newUser = { fullName, username, password };
-
-  User.create(newUser)
+  return User.hashPassword(password)
+    .then(digest => {
+      const newUser = {
+        username,
+        password: digest,
+        fullName
+      };
+      return User.create(newUser);
+    })
     .then(result => {
       res.location(`${req.originalUrl}/${result.id}`).status(201).json(result);
     })
