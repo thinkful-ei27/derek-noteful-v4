@@ -100,10 +100,10 @@ describe('Noteful API - Users', function () {
         .post('/api/users')
         .send(newUser)
         .then(res => {
-          expect(res).to.have.status(400);
+          expect(res).to.have.status(422);
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
-          expect(res.body.message).to.equal('Missing `username` in request body');
+          expect(res.body.message).to.equal('Missing \'username\' in request body');
         });
     });
 
@@ -115,14 +115,110 @@ describe('Noteful API - Users', function () {
         .post('/api/users')
         .send(newUser)
         .then(res => {
-          expect(res).to.have.status(400);
+          expect(res).to.have.status(422);
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
-          expect(res.body.message).to.equal('Missing `password` in request body');
+          expect(res.body.message).to.equal('Missing \'password\' in request body');
         });
     });
 
-    it('should return an error when "username" is empty string', function () {
+    it('should return an error when "username" is not a string', function () {
+      const newUser = {
+        username: 12345,
+        password: 'password'
+      };
+      return chai.request(app)
+        .post('/api/users')
+        .send(newUser)
+        .then(res => {
+          expect(res).to.have.status(422);
+          expect(res).to.be.json;
+          expect(res.body).to.be.a('object');
+          expect(res.body.code).to.equal(422);
+          expect(res.body.reason).to.equal('ValidationError');
+          expect(res.body.message).to.equal('Incorrect field type: expected string');
+          expect(res.body.location).to.equal('username');
+        });
+    });
+
+    it('should return an error when "password" is not a string', function () {
+      const newUser = {
+        username: 'testuser',
+        password: 12345
+      };
+      return chai.request(app)
+        .post('/api/users')
+        .send(newUser)
+        .then(res => {
+          expect(res).to.have.status(422);
+          expect(res).to.be.json;
+          expect(res.body).to.be.a('object');
+          expect(res.body.code).to.equal(422);
+          expect(res.body.reason).to.equal('ValidationError');
+          expect(res.body.message).to.equal('Incorrect field type: expected string');
+          expect(res.body.location).to.equal('password');
+        }); 
+    });
+
+    it('should return an error when "fullName" is not a string', function () {
+      const newUser = {
+        username: 'testuser',
+        password: 'password',
+        fullName: 12345 
+      };
+      return chai.request(app)
+        .post('/api/users')
+        .send(newUser)
+        .then(res => {
+          expect(res).to.have.status(422);
+          expect(res).to.be.json;
+          expect(res.body).to.be.a('object');
+          expect(res.body.code).to.equal(422);
+          expect(res.body.reason).to.equal('ValidationError');
+          expect(res.body.message).to.equal('Incorrect field type: expected string');
+          expect(res.body.location).to.equal('fullName');
+        }); 
+    });
+
+    it('should return an error when "username" has leading or trailing whitespace', function () {
+      const newUser = {
+        username: '   testuser   ',
+        password: 'password'
+      };
+      return chai.request(app)
+        .post('/api/users')
+        .send(newUser)
+        .then(res => {
+          expect(res).to.have.status(422);
+          expect(res).to.be.json;
+          expect(res.body).to.be.a('object');
+          expect(res.body.code).to.equal(422);
+          expect(res.body.reason).to.equal('ValidationError');
+          expect(res.body.message).to.equal('Cannot start or end with whitespace');
+          expect(res.body.location).to.equal('username');
+        }); 
+    });
+
+    it('should return an error when "password" has leading or trailing whitespace', function () {
+      const newUser = {
+        username: 'testuser',
+        password: '   password   '
+      };
+      return chai.request(app)
+        .post('/api/users')
+        .send(newUser)
+        .then(res => {
+          expect(res).to.have.status(422);
+          expect(res).to.be.json;
+          expect(res.body).to.be.a('object');
+          expect(res.body.code).to.equal(422);
+          expect(res.body.reason).to.equal('ValidationError');
+          expect(res.body.message).to.equal('Cannot start or end with whitespace');
+          expect(res.body.location).to.equal('password');
+        }); 
+    });
+
+    it('should return an error when "username" is less than one character', function () {
       const newUser = {
         username: '',
         password: 'password'
@@ -131,26 +227,51 @@ describe('Noteful API - Users', function () {
         .post('/api/users')
         .send(newUser)
         .then(res => {
-          expect(res).to.have.status(400);
+          expect(res).to.have.status(422);
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
-          expect(res.body.message).to.equal('Missing `username` in request body');
+          expect(res.body.code).to.equal(422);
+          expect(res.body.reason).to.equal('ValidationError');
+          expect(res.body.message).to.equal('Must be at least 1 characters long');
+          expect(res.body.location).to.equal('username');
         });
     });
 
-    it('should return an error when "password" is empty string', function () {
+    it('should return an error when "password" is less than eight characters', function () {
       const newUser = {
         username: 'testuser',
-        password: ''
+        password: '1234567'
       };
       return chai.request(app)
         .post('/api/users')
         .send(newUser)
         .then(res => {
-          expect(res).to.have.status(400);
+          expect(res).to.have.status(422);
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
-          expect(res.body.message).to.equal('Missing `password` in request body');
+          expect(res.body.code).to.equal(422);
+          expect(res.body.reason).to.equal('ValidationError');
+          expect(res.body.message).to.equal('Must be at least 8 characters long');
+          expect(res.body.location).to.equal('password');
+        });
+    });
+
+    it('should return an error when "password" is greater than seventy-two characters', function () {
+      const newUser = {
+        username: 'testuser',
+        password: 'a'.repeat(73)
+      };
+      return chai.request(app)
+        .post('/api/users')
+        .send(newUser)
+        .then(res => {
+          expect(res).to.have.status(422);
+          expect(res).to.be.json;
+          expect(res.body).to.be.a('object');
+          expect(res.body.code).to.equal(422);
+          expect(res.body.reason).to.equal('ValidationError');
+          expect(res.body.message).to.equal('Must be at most 72 characters long');
+          expect(res.body.location).to.equal('password');
         });
     });
 
