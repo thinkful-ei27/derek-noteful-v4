@@ -1,3 +1,5 @@
+'use strict';
+
 const notes = [
   {
     '_id': '000000000000000000000000',
@@ -93,4 +95,13 @@ const tags = [
   }
 ];
 
-module.exports = { folders, notes, tags };
+const users = [
+  {
+    '_id': '333333333333333333333300',
+    'fullName': 'Dummy User',
+    'username': 'dummyuser',
+    'password': 'dummyuser'
+  }
+];
+
+module.exports = { folders, notes, tags, users };
