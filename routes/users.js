@@ -82,8 +82,8 @@ router.post('/', (req, res, next) => {
       const newUser = {
         username,
         password: digest,
-        fullName
       };
+      if (fullName) { newUser.fullName = fullName.trim(); }
       return User.create(newUser);
     })
     .then(result => {

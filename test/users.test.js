@@ -1,18 +1,19 @@
 'use strict';
 
+const app = require('../server');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const mongoose = require('mongoose');
-const express = require('express');
 const sinon = require('sinon');
 
-const app = require('../server');
-const User = require('../models/user');
-const { users } = require('../db/data');
 const { TEST_MONGODB_URI } = require('../config');
 
-chai.use(chaiHttp);
+const User = require('../models/user');
+const { users } = require('../db/data');
+
 const expect = chai.expect;
+
+chai.use(chaiHttp);
 const sandbox = sinon.createSandbox();
 
 describe('Noteful API - Users', function () {
@@ -26,7 +27,8 @@ describe('Noteful API - Users', function () {
 
   beforeEach(function () {
     return Promise.all([
-      User.insertMany(users)
+      User.insertMany(users),
+      User.createIndexes()
     ]);
   });
 
@@ -59,12 +61,20 @@ describe('Noteful API - Users', function () {
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
           expect(res.body).to.have.all.keys('id', 'fullName', 'username');
+          expect(res.body.id).to.exist;
+          expect(res.body.username).to.equal(newUser.username);
+          expect(res.body.fullName).to.equal(newUser.fullName);
           return User.findById(res.body.id);
         })
         .then(data => {
+          expect(data).to.exist;
           expect(res.body.id).to.equal(data.id);
           expect(res.body.fullName).to.equal(data.fullName);
           expect(res.body.username).to.equal(data.username);
+          return data.validatePassword(newUser.password);
+        })
+        .then(isValid => {
+          expect(isValid).to.be.true;
         });
     });
 
@@ -92,7 +102,7 @@ describe('Noteful API - Users', function () {
         });
     });
 
-    it('should return an error when missing "username" field', function () {
+    it('should reject users with missing username', function () {
       const newUser = {
         password: 'password'
       };
@@ -107,7 +117,7 @@ describe('Noteful API - Users', function () {
         });
     });
 
-    it('should return an error when missing "password" field', function () {
+    it('should reject users with missing password', function () {
       const newUser = {
         username: 'testuser'
       };
@@ -122,7 +132,7 @@ describe('Noteful API - Users', function () {
         });
     });
 
-    it('should return an error when "username" is not a string', function () {
+    it('should reject users with non-string username', function () {
       const newUser = {
         username: 12345,
         password: 'password'
@@ -141,7 +151,7 @@ describe('Noteful API - Users', function () {
         });
     });
 
-    it('should return an error when "password" is not a string', function () {
+    it('should reject users with non-string password', function () {
       const newUser = {
         username: 'testuser',
         password: 12345
@@ -180,7 +190,7 @@ describe('Noteful API - Users', function () {
         }); 
     });
 
-    it('should return an error when "username" has leading or trailing whitespace', function () {
+    it('should reject users with non-trimmed username', function () {
       const newUser = {
         username: '   testuser   ',
         password: 'password'
@@ -199,7 +209,7 @@ describe('Noteful API - Users', function () {
         }); 
     });
 
-    it('should return an error when "password" has leading or trailing whitespace', function () {
+    it('should reject users with non-trimmed password', function () {
       const newUser = {
         username: 'testuser',
         password: '   password   '
@@ -218,7 +228,7 @@ describe('Noteful API - Users', function () {
         }); 
     });
 
-    it('should return an error when "username" is less than one character', function () {
+    it('should reject users with empty username', function () {
       const newUser = {
         username: '',
         password: 'password'
@@ -237,7 +247,7 @@ describe('Noteful API - Users', function () {
         });
     });
 
-    it('should return an error when "password" is less than eight characters', function () {
+    it('should reject users with password less than 8 characters', function () {
       const newUser = {
         username: 'testuser',
         password: '1234567'
@@ -256,7 +266,7 @@ describe('Noteful API - Users', function () {
         });
     });
 
-    it('should return an error when "password" is greater than seventy-two characters', function () {
+    it('should reject users with password greater than 72 characters', function () {
       const newUser = {
         username: 'testuser',
         password: 'a'.repeat(73)
@@ -275,7 +285,7 @@ describe('Noteful API - Users', function () {
         });
     });
 
-    it('should return an error when given a duplicate username', function () {
+    it('should reject users with duplicate username', function () {
       return User.findOne()
         .then(data => {
           const newUser = {
@@ -289,6 +299,32 @@ describe('Noteful API - Users', function () {
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
           expect(res.body.message).to.equal('Username already exists');
+        });
+    });
+
+    it('should trim fullname', function() {
+      const newUser = {
+        username: 'testuser',
+        password: 'password',
+        fullName: '   Test User   '
+      };
+      let res;
+      return chai.request(app)
+        .post('/api/users')
+        .send(newUser)
+        .then(_res => {
+          res = _res;
+          expect(res).to.have.status(201);
+          expect(res).to.have.header('location');
+          expect(res).to.be.json;
+          expect(res.body).to.be.a('object');
+          expect(res.body).to.have.all.keys('id', 'username', 'fullName');
+          expect(res.body.fullName).to.equal(newUser.fullName.trim());
+          return User.findById(res.body.id);
+        })
+        .then(data => {
+          expect(res.body.id).to.equal(data.id);
+          expect(res.body.fullName).to.equal(data.fullName);
         });
     });
 
