@@ -484,6 +484,7 @@ describe.only('Noteful API - Notes', function () {
           data = _data;
           return chai.request(app)
             .put(`/api/notes/${data.id}`)
+            .set('Authorization', `Bearer ${token}`)
             .send(updateItem);
         })
         .then(function (res) {
@@ -495,7 +496,7 @@ describe.only('Noteful API - Notes', function () {
           expect(res.body.title).to.equal(updateItem.title);
           expect(res.body.content).to.equal(data.content);
           expect(res.body.folderId).to.equal(data.folderId.toString());
-          expect(res.body.tags).to.deep.equal(data.tags);
+          expect(res.body.tags.map(tag => tag.toString())).to.deep.equal(data.tags.map(tag => tag.toString()));
           expect(new Date(res.body.createdAt)).to.eql(data.createdAt);
           // expect note to have been updated
           expect(new Date(res.body.updatedAt)).to.greaterThan(data.updatedAt);
@@ -507,11 +508,12 @@ describe.only('Noteful API - Notes', function () {
         content: 'Lorem ipsum dolor sit amet...',
       };
       let data;
-      return Note.findOne()
+      return Note.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
           return chai.request(app)
             .put(`/api/notes/${data.id}`)
+            .set('Authorization', `Bearer ${token}`)
             .send(updateItem);
         })
         .then(function (res) {
@@ -523,7 +525,7 @@ describe.only('Noteful API - Notes', function () {
           expect(res.body.title).to.equal(data.title);
           expect(res.body.content).to.equal(updateItem.content);
           expect(res.body.folderId).to.equal(data.folderId.toString());
-          expect(res.body.tags).to.deep.equal(data.tags);
+          expect(res.body.tags.map(tag => tag.toString())).to.deep.equal(data.tags.map(tag => tag.toString()));
           expect(new Date(res.body.createdAt)).to.eql(data.createdAt);
           // expect note to have been updated
           expect(new Date(res.body.updatedAt)).to.greaterThan(data.updatedAt);
@@ -541,7 +543,10 @@ describe.only('Noteful API - Notes', function () {
         .then(([folder, note]) => {
           updateItem.folderId = folder.id;
           data = note;
-          return chai.request(app).put(`/api/notes/${note.id}`).send(updateItem);
+          return chai.request(app)
+            .put(`/api/notes/${note.id}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send(updateItem);
         })
         .then(function (res) {
           expect(res).to.have.status(200);
@@ -552,7 +557,7 @@ describe.only('Noteful API - Notes', function () {
           expect(res.body.title).to.equal(data.title);
           expect(res.body.content).to.equal(data.content);
           expect(res.body.folderId).to.equal(updateItem.folderId);
-          expect(res.body.tags).to.deep.equal(data.tags);
+          expect(res.body.tags.map(tag => tag.toString())).to.deep.equal(data.tags.map(tag => tag.toString()));
           expect(new Date(res.body.createdAt)).to.eql(data.createdAt);
           // expect note to have been updated
           expect(new Date(res.body.updatedAt)).to.greaterThan(data.updatedAt);
@@ -572,7 +577,10 @@ describe.only('Noteful API - Notes', function () {
         .then(([tag, note]) => {
           updateItem.tags.push(tag.id);
           data = note;
-          return chai.request(app).put(`/api/notes/${note.id}`).send(updateItem);
+          return chai.request(app)
+            .put(`/api/notes/${note.id}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send(updateItem);
         })
         .then(function (res) {
           expect(res).to.have.status(200);
@@ -597,6 +605,7 @@ describe.only('Noteful API - Notes', function () {
       };
       return chai.request(app)
         .put('/api/notes/NOT-A-VALID-ID')
+        .set('Authorization', `Bearer ${token}`)
         .send(updateItem)
         .then(res => {
           expect(res).to.have.status(400);
@@ -612,6 +621,7 @@ describe.only('Noteful API - Notes', function () {
       };
       return chai.request(app)
         .put('/api/notes/DOESNOTEXIST')
+        .set('Authorization', `Bearer ${token}`)
         .send(updateItem)
         .then(res => {
           expect(res).to.have.status(404);
@@ -626,6 +636,7 @@ describe.only('Noteful API - Notes', function () {
           data = _data;
           return chai.request(app)
             .put(`/api/notes/${data.id}`)
+            .set('Authorization', `Bearer ${token}`)
             .send(updateItem);
         })
         .then(res => {
@@ -644,6 +655,7 @@ describe.only('Noteful API - Notes', function () {
         .then(data => {
           return chai.request(app)
             .put(`/api/notes/${data.id}`)
+            .set('Authorization', `Bearer ${token}`)
             .send(updateItem);
         })
         .then(res => {
@@ -663,7 +675,10 @@ describe.only('Noteful API - Notes', function () {
       return Note.findOne({ folderId: { $exists: true } })
         .then((note) => {
           data = note;
-          return chai.request(app).put(`/api/notes/${note.id}`).send(updateItem);
+          return chai.request(app)
+            .put(`/api/notes/${note.id}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send(updateItem);
         })
         .then(function (res) {
           expect(res).to.have.status(200);
@@ -674,7 +689,7 @@ describe.only('Noteful API - Notes', function () {
           expect(res.body.title).to.equal(data.title);
           expect(res.body.content).to.equal(data.content);
           expect(res.body.folderId).to.not.exist;
-          expect(res.body.tags).to.deep.equal(data.tags);
+          expect(res.body.tags.map(tag => tag.toString())).to.deep.equal(data.tags.map(tag => tag.toString()));
           expect(new Date(res.body.createdAt)).to.eql(data.createdAt);
           // expect note to have been updated
           expect(new Date(res.body.updatedAt)).to.greaterThan(data.updatedAt);
@@ -689,6 +704,7 @@ describe.only('Noteful API - Notes', function () {
         .then(data => {
           return chai.request(app)
             .put(`/api/notes/${data.id}`)
+            .set('Authorization', `Bearer ${token}`)
             .send(updateItem);
         })
         .then(res => {
@@ -710,6 +726,7 @@ describe.only('Noteful API - Notes', function () {
         .then(data => {
           return chai.request(app)
             .put(`/api/notes/${data.id}`)
+            .set('Authorization', `Bearer ${token}`)
             .send(updateItem);
         })
         .then(res => {

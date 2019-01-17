@@ -168,7 +168,7 @@ router.post('/', missingTitle, validateFolderId, validateTagIds, validateFolderU
   });
 
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
-router.put('/:id', missingTitle, validateFolderId, validateTagIds, validateFolderUserId, validateTagsUserIds, (req, res, next) => {
+router.put('/:id', validateFolderId, validateTagIds, validateFolderUserId, validateTagsUserIds, (req, res, next) => {
   const { id } = req.params;
   const userId = req.user.id;
 
@@ -184,6 +184,12 @@ router.put('/:id', missingTitle, validateFolderId, validateTagIds, validateFolde
   /***** Never trust users - validate input *****/
   if (!mongoose.Types.ObjectId.isValid(id)) {
     const err = new Error('The `id` is not valid');
+    err.status = 400;
+    return next(err);
+  }
+
+  if (toUpdate.title === '') {
+    const err = new Error('Missing `title` in request body');
     err.status = 400;
     return next(err);
   }
