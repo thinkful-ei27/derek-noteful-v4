@@ -309,6 +309,7 @@ describe.only('Noteful API - Notes', function () {
       let res;
       return chai.request(app)
         .post('/api/notes')
+        .set('Authorization', `Bearer ${token}`)
         .send(newItem)
         .then(function (_res) {
           res = _res;
@@ -316,7 +317,7 @@ describe.only('Noteful API - Notes', function () {
           expect(res).to.have.header('location');
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
-          expect(res.body).to.have.all.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'tags');
+          expect(res.body).to.have.all.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'tags', 'userId');
           return Note.findById(res.body.id);
         })
         .then(data => {
@@ -335,6 +336,7 @@ describe.only('Noteful API - Notes', function () {
       let res;
       return chai.request(app)
         .post('/api/notes')
+        .set('Authorization', `Bearer ${token}`)
         .send(newItem)
         .then(function (_res) {
           res = _res;
@@ -342,7 +344,7 @@ describe.only('Noteful API - Notes', function () {
           expect(res).to.have.header('location');
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
-          expect(res.body).to.have.all.keys('id', 'title', 'createdAt', 'updatedAt', 'tags');
+          expect(res.body).to.have.all.keys('id', 'title', 'createdAt', 'updatedAt', 'tags', 'userId');
           return Note.findOne({ _id: res.body.id });
         })
         .then(data => {
@@ -362,6 +364,7 @@ describe.only('Noteful API - Notes', function () {
       let res;
       return chai.request(app)
         .post('/api/notes')
+        .set('Authorization', `Bearer ${token}`)
         .send(newItem)
         .then(function (_res) {
           res = _res;
@@ -387,6 +390,7 @@ describe.only('Noteful API - Notes', function () {
       };
       return chai.request(app)
         .post('/api/notes')
+        .set('Authorization', `Bearer ${token}`)
         .send(newItem)
         .then(res => {
           expect(res).to.have.status(400);
@@ -400,6 +404,7 @@ describe.only('Noteful API - Notes', function () {
       const newItem = { title: '' };
       return chai.request(app)
         .post('/api/notes')
+        .set('Authorization', `Bearer ${token}`)
         .send(newItem)
         .then(res => {
           expect(res).to.have.status(400);
@@ -417,6 +422,7 @@ describe.only('Noteful API - Notes', function () {
       };
       return chai.request(app)
         .post('/api/notes')
+        .set('Authorization', `Bearer ${token}`)
         .send(newItem)
         .then(res => {
           expect(res).to.have.status(400);
@@ -434,6 +440,7 @@ describe.only('Noteful API - Notes', function () {
       };
       return chai.request(app)
         .post('/api/notes')
+        .set('Authorization', `Bearer ${token}`)
         .send(newItem)
         .then(res => {
           expect(res).to.have.status(400);
@@ -453,6 +460,7 @@ describe.only('Noteful API - Notes', function () {
 
       return chai.request(app)
         .post('/api/notes')
+        .set('Authorization', `Bearer ${token}`)
         .send(newItem)
         .then(res => {
           expect(res).to.have.status(500);
