@@ -184,6 +184,7 @@ describe.only('Noteful API - Tags', function () {
       let body;
       return chai.request(app)
         .post('/api/tags')
+        .set('Authorization', `Bearer ${token}`)
         .send(newItem)
         .then(function (res) {
           body = res.body;
@@ -191,7 +192,7 @@ describe.only('Noteful API - Tags', function () {
           expect(res).to.have.header('location');
           expect(res).to.be.json;
           expect(body).to.be.a('object');
-          expect(body).to.have.all.keys('id', 'name', 'createdAt', 'updatedAt');
+          expect(body).to.have.all.keys('id', 'name', 'createdAt', 'updatedAt', 'userId');
           return Tag.findOne({ _id: body.id });
         })
         .then(data => {
@@ -206,6 +207,7 @@ describe.only('Noteful API - Tags', function () {
       const newItem = {};
       return chai.request(app)
         .post('/api/tags')
+        .set('Authorization', `Bearer ${token}`)
         .send(newItem)
         .then(res => {
           expect(res).to.have.status(400);
@@ -219,6 +221,7 @@ describe.only('Noteful API - Tags', function () {
       const newItem = { name: '' };
       return chai.request(app)
         .post('/api/tags')
+        .set('Authorization', `Bearer ${token}`)
         .send(newItem)
         .then(res => {
           expect(res).to.have.status(400);
@@ -234,6 +237,7 @@ describe.only('Noteful API - Tags', function () {
           const newItem = { name: data.name };
           return chai.request(app)
             .post('/api/tags')
+            .set('Authorization', `Bearer ${token}`)
             .send(newItem);
         })
         .then(res => {
@@ -251,6 +255,7 @@ describe.only('Noteful API - Tags', function () {
       return chai.request(app)
         .post('/api/tags')
         .send(newItem)
+        .set('Authorization', `Bearer ${token}`)
         .then(res => {
           expect(res).to.have.status(500);
           expect(res).to.be.json;
