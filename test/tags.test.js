@@ -19,7 +19,7 @@ chai.use(chaiHttp);
 const expect = chai.expect;
 const sandbox = sinon.createSandbox();
 
-describe.only('Noteful API - Tags', function () {
+describe('Noteful API - Tags', function () {
 
   let token;
   let user;
@@ -401,12 +401,13 @@ describe.only('Noteful API - Tags', function () {
         .then(_data => {
           data = _data;
           return chai.request(app)
-            .delete(`/api/tags/${data.id}`);
+            .delete(`/api/tags/${data.id}`)
+            .set('Authorization', `Bearer ${token}`);
         })
         .then(function (res) {
           expect(res).to.have.status(204);
           expect(res.body).to.be.empty;
-          return Tag.count({ _id: data.id });
+          return Tag.countDocuments({ _id: data.id });
         })
         .then(count => {
           expect(count).to.equal(0);
@@ -420,12 +421,13 @@ describe.only('Noteful API - Tags', function () {
           tagId = data.tags[0];
 
           return chai.request(app)
-            .delete(`/api/tags/${tagId}`);
+            .delete(`/api/tags/${tagId}`)
+            .set('Authorization', `Bearer ${token}`);
         })
         .then(function (res) {
           expect(res).to.have.status(204);
           expect(res.body).to.be.empty;
-          return Note.count({ tags: tagId });
+          return Note.countDocuments({ tags: tagId });
         })
         .then(count => {
           expect(count).to.equal(0);
@@ -435,6 +437,7 @@ describe.only('Noteful API - Tags', function () {
     it('should respond with a 400 for an invalid id', function () {
       return chai.request(app)
         .delete('/api/tags/NOT-A-VALID-ID')
+        .set('Authorization', `Bearer ${token}`)
         .then(res => {
           expect(res).to.have.status(400);
           expect(res.body.message).to.equal('The `id` is not valid');
@@ -445,7 +448,9 @@ describe.only('Noteful API - Tags', function () {
       sandbox.stub(express.response, 'sendStatus').throws('FakeError');
       return Tag.findOne()
         .then(data => {
-          return chai.request(app).delete(`/api/tags/${data.id}`);
+          return chai.request(app)
+            .delete(`/api/tags/${data.id}`)
+            .set('Authorization', `Bearer ${token}`);
         })
         .then(res => {
           expect(res).to.have.status(500);
