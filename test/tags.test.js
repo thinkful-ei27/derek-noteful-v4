@@ -25,7 +25,7 @@ describe.only('Noteful API - Tags', function () {
   let user;
 
   before(function () {
-    return mongoose.connect(TEST_MONGODB_URI, { useNewUrlParser: true, useCreateIndex: true })
+    return mongoose.connect(TEST_MONGODB_URI, MONGOOSE_OPTIONS)
       .then(() => mongoose.connection.db.dropDatabase());
   });
 
@@ -276,13 +276,14 @@ describe.only('Noteful API - Tags', function () {
           data = _data;
           return chai.request(app)
             .put(`/api/tags/${data.id}`)
+            .set('Authorization', `Bearer ${token}`)
             .send(updateItem);
         })
         .then(function (res) {
           expect(res).to.have.status(200);
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
-          expect(res.body).to.have.all.keys('id', 'name', 'createdAt', 'updatedAt');
+          expect(res.body).to.have.all.keys('id', 'name', 'createdAt', 'updatedAt', 'userId');
           expect(res.body.id).to.equal(data.id);
           expect(res.body.name).to.equal(updateItem.name);
           expect(new Date(res.body.createdAt)).to.eql(data.createdAt);
@@ -295,6 +296,7 @@ describe.only('Noteful API - Tags', function () {
       const updateItem = { name: 'Blah' };
       return chai.request(app)
         .put('/api/tags/NOT-A-VALID-ID')
+        .set('Authorization', `Bearer ${token}`) 
         .send(updateItem)
         .then(res => {
           expect(res).to.have.status(400);
@@ -307,6 +309,7 @@ describe.only('Noteful API - Tags', function () {
       // The string "DOESNOTEXIST" is 12 bytes which is a valid Mongo ObjectId
       return chai.request(app)
         .put('/api/tags/DOESNOTEXIST')
+        .set('Authorization', `Bearer ${token}`) 
         .send(updateItem)
         .then(res => {
           expect(res).to.have.status(404);
@@ -321,6 +324,7 @@ describe.only('Noteful API - Tags', function () {
           data = _data;
           return chai.request(app)
             .put(`/api/tags/${data.id}`)
+            .set('Authorization', `Bearer ${token}`) 
             .send(updateItem);
         })
         .then(res => {
@@ -339,6 +343,7 @@ describe.only('Noteful API - Tags', function () {
           data = _data;
           return chai.request(app)
             .put(`/api/tags/${data.id}`)
+            .set('Authorization', `Bearer ${token}`) 
             .send(updateItem);
         })
         .then(res => {
@@ -356,6 +361,7 @@ describe.only('Noteful API - Tags', function () {
           item1.name = item2.name;
           return chai.request(app)
             .put(`/api/tags/${item1.id}`)
+            .set('Authorization', `Bearer ${token}`) 
             .send(item1);
         })
         .then(res => {
@@ -374,6 +380,7 @@ describe.only('Noteful API - Tags', function () {
         .then(data => {
           return chai.request(app)
             .put(`/api/tags/${data.id}`)
+            .set('Authorization', `Bearer ${token}`) 
             .send(updateItem);
         })
         .then(res => {
