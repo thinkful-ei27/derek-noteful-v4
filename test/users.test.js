@@ -44,7 +44,7 @@ describe('Noteful API - Users', function () {
   });
 
   describe('POST /api/users', function () {
-    it('should create and return a new user when provided valid username, password, and fullName', function () {
+    it('should create a new user when provided valid username, password, and fullName', function () {
       const newUser = {
         fullName: 'Test User',
         username: 'testuser',
