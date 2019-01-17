@@ -243,7 +243,9 @@ describe.only('Noteful API - Notes', function () {
       return Note.findOne()
         .then(_data => {
           data = _data;
-          return chai.request(app).get(`/api/notes/${data.id}`);
+          return chai.request(app)
+            .get(`/api/notes/${data.id}`)
+            .set('Authorization', `Bearer ${token}`);
         })
         .then((res) => {
           expect(res).to.have.status(200);
@@ -262,6 +264,7 @@ describe.only('Noteful API - Notes', function () {
     it('should respond with status 400 and an error message when `id` is not valid', function () {
       return chai.request(app)
         .get('/api/notes/NOT-A-VALID-ID')
+        .set('Authorization', `Bearer ${token}`)
         .then(res => {
           expect(res).to.have.status(400);
           expect(res.body.message).to.equal('The `id` is not valid');
@@ -272,6 +275,7 @@ describe.only('Noteful API - Notes', function () {
       // The string "DOESNOTEXIST" is 12 bytes which is a valid Mongo ObjectId
       return chai.request(app)
         .get('/api/notes/DOESNOTEXIST')
+        .set('Authorization', `Bearer ${token}`)
         .then(res => {
           expect(res).to.have.status(404);
         });
@@ -281,7 +285,9 @@ describe.only('Noteful API - Notes', function () {
       sandbox.stub(Note.schema.options.toJSON, 'transform').throws('FakeError');
       return Note.findOne()
         .then(data => {
-          return chai.request(app).get(`/api/notes/${data.id}`);
+          return chai.request(app)
+            .get(`/api/notes/${data.id}`)
+            .set('Authorization', `Bearer ${token}`);
         })
         .then(res => {
           expect(res).to.have.status(500);
