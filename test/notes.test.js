@@ -19,7 +19,7 @@ chai.use(chaiHttp);
 const expect = chai.expect;
 const sandbox = sinon.createSandbox();
 
-describe.only('Noteful API - Notes', function () {
+describe('Noteful API - Notes', function () {
 
   let token;
   let user;
@@ -746,11 +746,13 @@ describe.only('Noteful API - Notes', function () {
       return Note.findOne()
         .then(_data => {
           data = _data;
-          return chai.request(app).delete(`/api/notes/${data.id}`);
+          return chai.request(app)
+            .delete(`/api/notes/${data.id}`)
+            .set('Authorization', `Bearer ${token}`);
         })
         .then(res => {
           expect(res).to.have.status(204);
-          return Note.count({ _id: data.id });
+          return Note.countDocuments({ _id: data.id });
         })
         .then(count => {
           expect(count).to.equal(0);
@@ -760,6 +762,7 @@ describe.only('Noteful API - Notes', function () {
     it('should respond with a 400 for an invalid id', function () {
       return chai.request(app)
         .delete('/api/notes/NOT-A-VALID-ID')
+        .set('Authorization', `Bearer ${token}`)
         .then(res => {
           expect(res).to.have.status(400);
           expect(res.body.message).to.equal('The `id` is not valid');
@@ -770,7 +773,9 @@ describe.only('Noteful API - Notes', function () {
       sandbox.stub(express.response, 'sendStatus').throws('FakeError');
       return Note.findOne()
         .then(data => {
-          return chai.request(app).delete(`/api/notes/${data.id}`);
+          return chai.request(app)
+            .delete(`/api/notes/${data.id}`)
+            .set('Authorization', `Bearer ${token}`);
         })
         .then(res => {
           expect(res).to.have.status(500);
